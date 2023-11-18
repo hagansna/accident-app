@@ -14,7 +14,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Accident struct {
+type Vehicle struct {
 	Case_Num             string  `json:"Case_Num"`
 	Veh_Num              int     `json:"VEH_Num"`
 	Occupation_Num       int     `json:"Occupation_Num"`
@@ -56,9 +56,9 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/accidents", getAccidents).Methods("GET")
+	router.HandleFunc("/api/vehicles", getVehicles).Methods("GET")
 	router.HandleFunc("/api/count", getCount).Methods("GET")
-	// http.HandleFunc("/api/accidents", func(w http.ResponseWriter, r *http.Request) {
+	// http.HandleFunc("/api/vehicles", func(w http.ResponseWriter, r *http.Request) {
 	// 	fmt.Fprintf(w, "The current time is: %s", time.Now())
 	// })
 	http.ListenAndServe(":8080", router)
@@ -67,7 +67,7 @@ func main() {
 func getCount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var count int
-	result, err := db.Query("SELECT COUNT(*) FROM Accidents")
+	result, err := db.Query("SELECT COUNT(*) FROM Vehicles")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -82,7 +82,7 @@ func getCount(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(count)
 }
 
-func getAccidents(w http.ResponseWriter, r *http.Request) {
+func getVehicles(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	page := r.URL.Query().Get("page")
 	size := r.URL.Query().Get("size")
@@ -94,7 +94,7 @@ func getAccidents(w http.ResponseWriter, r *http.Request) {
 	if err != nil || pageSize > 100 {
 		pageSize = 10
 	}
-	var accidents []Accident
+	var vehicles []Vehicle
 
 	offset := (pageNum - 1) * pageSize
 	result, err := db.Query(`SELECT
@@ -107,7 +107,7 @@ func getAccidents(w http.ResponseWriter, r *http.Request) {
 		COALESCE(v.PlantState, "") as PlantState, COALESCE(v.PlantCity, "") as PlantCity,
 		COALESCE(v.PlantCompanyName, "") as PlantCompanyName, 
 		COALESCE(v.BasePrice, -1) as BasePrice
-		FROM Accidents as a LEFT JOIN vpicdecode as v 
+		FROM Vehicles as a LEFT JOIN vpicdecode as v 
 		ON a.Case_Num=v.CASENUM 
 		AND a.VEH_Num=v.VEH_NO LIMIT ? OFFSET ?`, pageSize, offset)
 	if err != nil {
@@ -117,20 +117,20 @@ func getAccidents(w http.ResponseWriter, r *http.Request) {
 	defer result.Close()
 
 	for result.Next() {
-		var accident Accident
-		err := result.Scan(&accident.Case_Num, &accident.Veh_Num,
+		var vehicle Vehicle
+		err := result.Scan(&vehicle.Case_Num, &vehicle.Veh_Num,
 			IgnoreColumn, IgnoreColumn,
-			&accident.Occupation_Num, &accident.Hit_Run,
-			&accident.VIN, &accident.Model_Year, &accident.VehicleType,
-			&accident.ManufacturerFullName, &accident.Make, &accident.Model,
-			&accident.PlantCountry,
-			&accident.PlantState, &accident.PlantCity,
-			&accident.PlantCompanyName, &accident.BasePrice)
+			&vehicle.Occupation_Num, &vehicle.Hit_Run,
+			&vehicle.VIN, &vehicle.Model_Year, &vehicle.VehicleType,
+			&vehicle.ManufacturerFullName, &vehicle.Make, &vehicle.Model,
+			&vehicle.PlantCountry,
+			&vehicle.PlantState, &vehicle.PlantCity,
+			&vehicle.PlantCompanyName, &vehicle.BasePrice)
 		if err != nil {
 			panic(err.Error())
 		}
-		accidents = append(accidents, accident)
+		vehicles = append(vehicles, vehicle)
 	}
 
-	json.NewEncoder(w).Encode(accidents)
+	json.NewEncoder(w).Encode(vehicles)
 }
