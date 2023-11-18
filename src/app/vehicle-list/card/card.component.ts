@@ -1,14 +1,14 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import Accident from '../../../shared/interfaces/accidents.model';
+import Vehicle from '../../shared/interfaces/vehicle.model';
 
 @Component({
   selector: 'app-card',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './card.component.html',
-  styleUrl: './card.component.css'
+  styleUrl: './card.component.css',
 })
 export class CardComponent {
-  @Input() accident!: Accident;
+  @Input() vehicle!: Vehicle;
 }

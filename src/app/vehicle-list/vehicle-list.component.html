@@ -1,6 +1,6 @@
-@if (this.accidentsService.loaded()) {
-@for (accident of this.accidentsService.accidents(); track accident.Case_Num) {
-<app-card [accident]="accident"></app-card>
+@if (this.vehiclesService.loaded()) {
+@for (vehicle of this.vehiclesService.vehicles(); track vehicle.Case_Num) {
+<app-card [vehicle]="vehicle"></app-card>
 }
 }
 @else {
@@ -11,7 +11,7 @@ LOADING!
         <div aria-label="first page" class="l-btn" (click)="firstPage()">&lt;&lt;</div>
         <div aria-label="previous page" class="r-btn" (click)="previousPage()">&lt;</div>
     </div>
-    {{this.accidentsService.page() | number}} / {{this.accidentsService.totalPageCount() | number}}
+    {{this.vehiclesService.page() | number}} / {{this.vehiclesService.totalPageCount() | number}}
     <div class="buttons">
         <div aria-label="next page" class="l-btn" (click)="nextPage()">&gt;</div>
         <div aria-label="last page" class="r-btn" (click)="lastPage()">&gt;&gt;</div>
