@@ -15,12 +15,12 @@ import (
 )
 
 type Vehicle struct {
-	Case_Num             string  `json:"Case_Num"`
-	Veh_Num              int     `json:"VEH_Num"`
-	Occupation_Num       int     `json:"Occupation_Num"`
-	Hit_Run              int     `json:"Hit_Run"`
+	Case_Num             string  `json:"CASENUM"`
+	Veh_Num              int     `json:"VEH_NO"`
+	Occupation_Num       int     `json:"NUMOCCS"`
+	Hit_Run              int     `json:"HIT_RUN"`
 	VIN                  string  `json:"VIN"`
-	Model_Year           int     `json:"Model_Year"`
+	Model_Year           int     `json:"MDLYR_IM"`
 	Make                 string  `json:"Make"`
 	Model                string  `json:"Model"`
 	VehicleType          string  `json:"VehicleType"`
@@ -30,6 +30,12 @@ type Vehicle struct {
 	PlantCity            string  `json:"PlantCity"`
 	PlantCompanyName     string  `json:"PlantCompanyName"`
 	BasePrice            float64 `json:"BasePrice"`
+}
+
+type Frequency struct {
+	Make  string `json:"Make"`
+	Model string `json:"Model"`
+	Count int    `json:"Count"`
 }
 
 var IgnoreColumn ignoreColumn
@@ -58,16 +64,57 @@ func main() {
 
 	router.HandleFunc("/api/vehicles", getVehicles).Methods("GET")
 	router.HandleFunc("/api/count", getCount).Methods("GET")
+	router.HandleFunc("/api/frequency", getVehicleFrequency).Methods("GET")
 	// http.HandleFunc("/api/vehicles", func(w http.ResponseWriter, r *http.Request) {
 	// 	fmt.Fprintf(w, "The current time is: %s", time.Now())
 	// })
 	http.ListenAndServe(":8080", router)
 }
 
+// SELECT f.Make, SUM(Count)/t.Total * 100 as percentage FROM frequency as f CROSS JOIN (SELECT SUM(Count) as Total FROM frequency) AS t GROUP BY f.Make, t.Total ORDER BY percentage DESC;
+
+func getVehicleFrequency(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	page := r.URL.Query().Get("page")
+	size := r.URL.Query().Get("size")
+	searchTerm := r.URL.Query().Get("searchTerm")
+	pageNum, err := strconv.Atoi(page)
+	if err != nil {
+		pageNum = 1
+	}
+	pageSize, err := strconv.Atoi(size)
+	if err != nil || pageSize > 100 {
+		pageSize = 10
+	}
+	offset := (pageNum - 1) * pageSize
+	var frequencies []Frequency
+	var result *sql.Rows
+	if searchTerm != "" {
+		result, err = db.Query(`SELECT * FROM frequency WHERE CONCAT(Make, Model) RLIKE ? ORDER BY Count DESC LIMIT ? OFFSET ?`, searchTerm, pageSize, offset)
+	} else {
+		result, err = db.Query(`SELECT * FROM frequency ORDER BY Count DESC LIMIT ? OFFSET ?`, pageSize, offset)
+	}
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	for result.Next() {
+		var frequency Frequency
+		err := result.Scan(&frequency.Make, &frequency.Model, &frequency.Count)
+		if err != nil {
+			panic(err.Error())
+		}
+		frequencies = append(frequencies, frequency)
+	}
+	json.NewEncoder(w).Encode(frequencies)
+}
+
 func getCount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var count int
-	result, err := db.Query("SELECT COUNT(*) FROM Vehicles")
+	result, err := db.Query("SELECT COUNT(*) FROM vehicle")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -98,8 +145,8 @@ func getVehicles(w http.ResponseWriter, r *http.Request) {
 
 	offset := (pageNum - 1) * pageSize
 	result, err := db.Query(`SELECT
-		a.Case_Num, a.VEH_Num, v.CASENUM, v.VEH_NO, COALESCE(a.Occupation_Num, -1) as Occupation_Num,
-		COALESCE(a.Hit_Run, -1) as Hit_Run, a.VIN, COALESCE(a.Model_Year, -1) as Model_Year, 
+		a.CASENUM, a.VEH_NO, v.CASENUM, v.VEH_NO, COALESCE(a.NUMOCCS, -1) as NUMOCCS,
+		COALESCE(a.HIT_RUN, -1) as HIT_RUN, a.VIN, COALESCE(a.MDLYR_IM, -1) as MDLYR_IM, 
 		COALESCE(v.VehicleType, "") as VehicleType,
 		COALESCE(v.ManufacturerFullName, "") as ManufacturerFullName,
 		COALESCE(v.Make, "") as Make,
@@ -107,9 +154,9 @@ func getVehicles(w http.ResponseWriter, r *http.Request) {
 		COALESCE(v.PlantState, "") as PlantState, COALESCE(v.PlantCity, "") as PlantCity,
 		COALESCE(v.PlantCompanyName, "") as PlantCompanyName, 
 		COALESCE(v.BasePrice, -1) as BasePrice
-		FROM Vehicles as a LEFT JOIN vpicdecode as v 
-		ON a.Case_Num=v.CASENUM 
-		AND a.VEH_Num=v.VEH_NO LIMIT ? OFFSET ?`, pageSize, offset)
+		FROM vehicle as a LEFT JOIN vpicdecode as v 
+		ON a.CASENUM=v.CASENUM 
+		AND a.VEH_NO=v.VEH_NO LIMIT ? OFFSET ?`, pageSize, offset)
 	if err != nil {
 		panic(err.Error())
 	}

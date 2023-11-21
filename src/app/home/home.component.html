@@ -1,0 +1,13 @@
+<app-search-bar (filterEmitter)="filterTable($event)"/>
+@if (this.frequencyListService.loaded()) {
+    <app-data-table [frequencies$]="frequencies$" [displayedColumns]="displayedColumns"/>
+    <div class="nav">
+        <div class="buttons">
+            <div aria-label="previous page" class="r-btn" (click)="previousPage()">&lt;</div>
+        </div>
+        {{this.frequencyListService.page() | number}}
+        <div class="buttons">
+            <div aria-label="next page" class="l-btn" (click)="nextPage()">&gt;</div>
+        </div>
+    </div>
+}

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import Vehicle from '../../shared/interfaces/vehicle.model';
+import Vehicle from '../../../shared/interfaces/vehicle.model';
 
 @Component({
   selector: 'app-card',

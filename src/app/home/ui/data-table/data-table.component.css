@@ -1,0 +1,18 @@
+.frequency-table {
+	width: 100%;
+}
+
+.mat-column-Make {
+	width: 33%;
+	text-align: center;
+}
+
+.mat-column-Model {
+	width: 33%;
+	text-align: center;
+}
+
+.mat-column-Count {
+	width: 33%;
+	text-align: center;
+}

@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { VehiclesService } from '../shared/data-access/vehicles.service';
-import { CardComponent } from './card/card.component';
+import { VehiclesService } from './data-access/vehicles.service';
+import { CardComponent } from './ui/card/card.component';
 
 @Component({
   selector: 'app-vehicle-list',

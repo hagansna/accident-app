@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Subject, concatMap, map, mergeMap, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import Vehicle from '../interfaces/vehicle.model';
+import Vehicle from '../../shared/interfaces/vehicle.model';
 
 interface State {
   vehicles: Vehicle[];

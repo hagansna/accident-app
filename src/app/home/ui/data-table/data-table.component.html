@@ -1,0 +1,22 @@
+<table mat-table [dataSource]="frequencies$" class="mat-elevation-z8 frequency-table">
+    <!-- Position Column -->
+    <ng-container matColumnDef="Make">
+      <th mat-header-cell *matHeaderCellDef> Make </th>
+      <td mat-cell *matCellDef="let element"> {{element.Make || "Unknown"}} </td>
+    </ng-container>
+  
+    <!-- Name Column -->
+    <ng-container matColumnDef="Model">
+      <th mat-header-cell *matHeaderCellDef> Model </th>
+      <td mat-cell *matCellDef="let element"> {{element.Model || "Unknown"}} </td>
+    </ng-container>
+  
+    <!-- Weight Column -->
+    <ng-container matColumnDef="Count">
+      <th mat-header-cell *matHeaderCellDef> Count </th>
+      <td mat-cell *matCellDef="let element"> {{element.Count | number}} </td>
+    </ng-container>
+  
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
